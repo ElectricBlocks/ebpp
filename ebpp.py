@@ -94,6 +94,7 @@ if __name__ == "__main__":
     """ Entry point for program
     Just calls run and starts listening for requests
     """
+    host_addr = "0.0.0.0"
     debug_flag = False
     argc = len(sys.argv)
     if argc == 1:
@@ -101,9 +102,10 @@ if __name__ == "__main__":
     elif argc == 2:
         if sys.argv[1] == "-d":
             print("Running flask in debug mode.")
+            host_addr = "127.0.0.1"
             debug_flag = True
         else:
             print(f"The flag {sys.argv[1]} is not a valid flag.")
     else:
         print("Invalid number of arguments given.")
-    app.run(port="1127", debug=debug_flag)
+    app.run(host=host_addr, port="1127", debug=debug_flag)
