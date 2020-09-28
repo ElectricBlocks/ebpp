@@ -15,12 +15,22 @@ app = Flask(__name__)
 
 @app.errorhandler(InvalidError)
 def invalid_error(error):
-    """ Replies with an invalid error message"""
+    """Replies with an invalid error message"""
     return json.dumps(error.to_dict())
 
 @app.errorhandler(JsonError)
 def json_error(error):
-    """ Replies with an json error message"""
+    """Replies with an json error message"""
+    return json.dumps(error.to_dict())
+
+@app.errorhandler(PPError)
+def pp_error(error):
+    """Replies with a pandapower error message"""
+    return json.dumps(error.to_dict())
+
+@app.errorhandler(ConvError)
+def conv_error(error):
+    """Reples with a pandapower convergence error"""
     return json.dumps(error.to_dict())
 
 # API ENTRY POINTS
