@@ -41,7 +41,9 @@ def index():
 
 @app.route("/api", methods=["GET", "POST"])
 def api():
-    if not request.is_json:
+    try:
+        json.loads(request.data)
+    except:
         raise JsonError("Could not parse json from request data")
 
     status = utils.get_or_error("status", request.json)
