@@ -64,10 +64,20 @@ def keep_alive():
 
 def sim_request(data):
     is_three_phase = utils.get_or_error("3phase", data)
+    elements = utils.get_or_error("elements", data)
+    buses = {}
 
     net = pp.create_empty_network()
     
-    # TODO Perform network creation 
+    # Start by adding all buses to the network
+    for key in elements:
+        element = elements[key]
+        element_type = utils.get_or_error("type", element)
+        if element_type == "bus":
+            vn_kv = element.get("vn_kv", 20.0)
+            i = pp.create_bus(net, name=key, vn_kv=vn_kv)
+            buses[i] = key
+    
     
     try:
         if is_three_phase:
