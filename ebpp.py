@@ -70,14 +70,52 @@ def sim_request(data):
     net = pp.create_empty_network()
     
     # Start by adding all buses to the network
-    for key in elements:
-        element = elements[key]
-        element_type = utils.get_or_error("type", element)
+    for uuid,element in elements.items():
+        element_type = utils.get_or_error("etype", element)
         if element_type == "bus":
+            # Fill required properties
+            req_props = utils.required_props["bus"]
             vn_kv = element.get("vn_kv", 20.0)
-            i = pp.create_bus(net, name=key, vn_kv=vn_kv)
-            buses[i] = key
+            i = pp.create_bus(net, name=uuid, vn_kv=vn_kv)
+
+            # Fill optional properties
+            for prop, value in element.items():
+                if prop not in req_props:
+                    net.bus[prop][i] = value
+            
+            buses[uuid] = i
     
+    for uuid,element in elements.items():
+        element_type = utils.get_or_error("etype", element)
+        req_props = utils.required_props[element_type]
+        index = None
+
+        # Create with required props
+        if element_type == "load":
+            bus = utils.get_or_error("bus", element)
+            p_mw = utils.get_or_error("p_mw", element)
+            index = pp.create_load(net, buses[bus], p_mw=p_mw)
+            pass
+        elif element_type == "ext_grid":
+            req_props = utils.required_props["ext_grid"]
+            bus = utils.get_or_error("bus", element)
+            index = pp.create_ext_grid(net, buses[bus])
+        elif element_type == "line":
+            req_props = utils.required_props["line"]
+        elif element_type == "bus":
+            pass # Already handled above
+        else:
+            raise InvalidError(f"Element type {element_type} is invalid or not implemented!")
+
+        # Fill optional props
+        for prop, value in element.items(): # BUG This does not fill optional props from Optimal Power Flow
+            if prop not in req_props:
+                net[element_type][prop][index] = value
+
+
+    print(net)
+    print(net.bus)
+    print(net.ext_grid)
     
     try:
         if is_three_phase:

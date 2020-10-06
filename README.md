@@ -86,7 +86,7 @@ The endpoint for using the API is http://127.0.0.1:1127/api. This API sends and 
     "3phase": false,
     "elements": {
         "UUID": {
-            "type": "gen",
+            "etype": "gen",
             "bus": "UUID of Bus",
             "p_mw": 1.0,
             "vm_pu": 120,
@@ -116,7 +116,7 @@ The endpoint for using the API is http://127.0.0.1:1127/api. This API sends and 
     "status": "SIM_RESULT",
     "elements": {
         "UUID": {
-            "type": "gen",
+            "etype": "gen",
             "p_mw": 1.0,
             "vm_pu": 120.0,
             "other_results": "value",
