@@ -94,17 +94,17 @@ def sim_request(data):
         if element_type == "load":
             bus = utils.get_or_error("bus", element)
             p_mw = utils.get_or_error("p_mw", element)
-            index = pp.create_load(net, buses[bus], p_mw=p_mw)
+            index = pp.create_load(net, buses[bus], p_mw=p_mw, name=uuid)
             pass
         elif element_type == "ext_grid":
             bus = utils.get_or_error("bus", element)
-            index = pp.create_ext_grid(net, buses[bus])
+            index = pp.create_ext_grid(net, buses[bus], name=uuid)
         elif element_type == "line":
             from_bus = utils.get_or_error("from_bus", element)
             to_bus = utils.get_or_error("to_bus", element)
             length_km = utils.get_or_error("length_km", element)
             std_type = utils.get_or_error("std_type", element)
-            index = pp.create_line(net, buses[from_bus], buses[to_bus], length_km, std_type)
+            index = pp.create_line(net, buses[from_bus], buses[to_bus], length_km, std_type, name=uuid)
         elif element_type == "bus":
             pass # Already handled above
         else:
@@ -130,23 +130,18 @@ def sim_request(data):
     except Exception as e:
         raise PPError("Unknown exception has occured: " + str(e))
 
-    print(net.res_bus)
     message = {}
     message["status"] = "SIM_RESULT"
     results = {}
 
-    # TODO Parse results
+    for uuid,element in elements.items():
+        results[uuid] = {}
+        element_type = elements[uuid]["etype"]
+        results[uuid]["etype"] = element_type
+        index = pp.get_element_index(net, element_type, uuid, exact_match=True)
+        results[uuid].update(net["res_" + element_type].iloc[index].to_dict())
 
-    par = []
-    res = []
-    for tb in list(net.keys()):
-        if not tb.startswith("_") and isinstance(net[tb], pd.DataFrame) and len(net[tb]) > 0:
-            if 'res_' in tb:
-                res.append(tb)
-            else:
-                par.append(tb)
-
-    message["response"] = results
+    message["elements"] = results
     return json.dumps(message)
 
 # PROGRAM MAIN ENTRY POINT
