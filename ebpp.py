@@ -97,11 +97,14 @@ def sim_request(data):
             index = pp.create_load(net, buses[bus], p_mw=p_mw)
             pass
         elif element_type == "ext_grid":
-            req_props = utils.required_props["ext_grid"]
             bus = utils.get_or_error("bus", element)
             index = pp.create_ext_grid(net, buses[bus])
         elif element_type == "line":
-            req_props = utils.required_props["line"]
+            from_bus = utils.get_or_error("from_bus", element)
+            to_bus = utils.get_or_error("to_bus", element)
+            length_km = utils.get_or_error("length_km", element)
+            std_type = utils.get_or_error("std_type", element)
+            index = pp.create_line(net, buses[from_bus], buses[to_bus], length_km, std_type)
         elif element_type == "bus":
             pass # Already handled above
         else:
@@ -114,11 +117,6 @@ def sim_request(data):
                     net[element_type][prop][index] = value
                 except:
                     raise InvalidError(f"Unable to set property {prop}.")
-
-
-    print(net)
-    print(net.bus)
-    print(net.ext_grid)
     
     try:
         if is_three_phase:
@@ -132,6 +130,7 @@ def sim_request(data):
     except Exception as e:
         raise PPError("Unknown exception has occured: " + str(e))
 
+    print(net.res_bus)
     message = {}
     message["status"] = "SIM_RESULT"
     results = {}
