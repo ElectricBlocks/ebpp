@@ -110,7 +110,10 @@ def sim_request(data):
         # Fill optional props
         for prop, value in element.items(): # BUG This does not fill optional props from Optimal Power Flow
             if prop not in req_props:
-                net[element_type][prop][index] = value
+                try:
+                    net[element_type][prop][index] = value
+                except:
+                    raise InvalidError(f"Unable to set property {prop}.")
 
 
     print(net)
