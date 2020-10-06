@@ -1,6 +1,6 @@
 # EBPP
 
-EBPP (Electric Blocks PandaPower) is a server that sends and receives simulation results for the mod [Electric Blocks](https://github.com/Electric-Blocks/electricblocks).
+EBPP (Electric Blocks PandaPower) is a server that sends and receives simulation results for the mod [Electric Blocks](https://github.com/ElectricBlocks/electricblocks).
 
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
@@ -40,7 +40,7 @@ When installing this software you have two options. The first option uses docker
 
 First make sure you have docker installed on your computer/server. Then build with this command:
 
-`docker build github.com/Electric-Blocks/ebpp -t ebpp`
+`docker build github.com/ElectricBlocks/ebpp -t ebpp`
 
 Once the docker image is finished building, you can run with the command:
 
@@ -51,7 +51,7 @@ Once the docker image is finished building, you can run with the command:
 To install manually, make sure you have python3 installed and then run the following commands:
 
 ```sh
-git clone https://github.com/Electric-Blocks/ebpp.git
+git clone https://github.com/ElectricBlocks/ebpp.git
 cd ebpp
 pip install -r requirements.txt
 ```
@@ -178,13 +178,13 @@ This software is developed by students at the University of Idaho for the Capsto
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/Electric-Blocks/ebpp.svg?style=flat-square
-[contributors-url]: https://github.com/Electric-Blocks/ebpp/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/Electric-Blocks/ebpp.svg?style=flat-square
-[forks-url]: https://github.com/Electric-Blocks/ebpp/network/members
-[stars-shield]: https://img.shields.io/github/stars/Electric-Blocks/ebpp.svg?style=flat-square
-[stars-url]: https://github.com/Electric-Blocks/ebpp/stargazers
-[issues-shield]: https://img.shields.io/github/issues/Electric-Blocks/ebpp.svg?style=flat-square
-[issues-url]: https://github.com/Electric-Blocks/ebpp/issues
-[license-shield]: https://img.shields.io/github/license/Electric-Blocks/ebpp.svg?style=flat-square
-[license-url]: https://github.com/Electric-Blocks/ebpp/blob/master/LICENSE.md
+[contributors-shield]: https://img.shields.io/github/contributors/ElectricBlocks/ebpp.svg?style=flat-square
+[contributors-url]: https://github.com/ElectricBlocks/ebpp/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/ElectricBlocks/ebpp.svg?style=flat-square
+[forks-url]: https://github.com/ElectricBlocks/ebpp/network/members
+[stars-shield]: https://img.shields.io/github/stars/ElectricBlocks/ebpp.svg?style=flat-square
+[stars-url]: https://github.com/ElectricBlocks/ebpp/stargazers
+[issues-shield]: https://img.shields.io/github/issues/ElectricBlocks/ebpp.svg?style=flat-square
+[issues-url]: https://github.com/ElectricBlocks/ebpp/issues
+[license-shield]: https://img.shields.io/github/license/ElectricBlocks/ebpp.svg?style=flat-square
+[license-url]: https://github.com/ElectricBlocks/ebpp/blob/master/LICENSE.md
