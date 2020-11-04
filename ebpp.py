@@ -96,6 +96,11 @@ def sim_request(data):
             p_mw = utils.get_or_error("p_mw", element)
             index = pp.create_load(net, buses[bus], p_mw=p_mw, name=uuid)
             pass
+        elif element_type == "gen":
+            bus = utils.get_or_error("bus", element)
+            p_mw = utils.get_or_error("p_mw", element)
+            vm_pu = utils.get_or_error("vm_pu", element)
+            index = pp.create_gen(net, buses[bus], p_mw=p_mw, vm_pu=vm_pu, name=uuid)
         elif element_type == "ext_grid":
             bus = utils.get_or_error("bus", element)
             index = pp.create_ext_grid(net, buses[bus], name=uuid)
