@@ -9,7 +9,8 @@ required_props = {
     "ext_grid": ["etype", "bus"],
     "line": ["etype", "from_bus", "to_bus", "length_km", "std_type"],
     "switch": ["etype", "bus", "element", "et"],
-    "trafo": ["etype", "hv_bus", "lv_bus", "std_type"]
+    "trafo": ["etype", "hv_bus", "lv_bus", "std_type"],
+    "storage": ["etype", "bus", "p_mw", "max_e_mwh"]
 }
 
 def get_or_error(key, input_dict):

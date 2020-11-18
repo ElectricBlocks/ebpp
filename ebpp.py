@@ -115,6 +115,11 @@ def sim_request(data):
             lv_bus = utils.get_or_error("lv_bus", element)
             std_type = utils.get_or_error("std_type", element)
             index = pp.create_transformer(net, buses[hv_bus], buses[lv_bus], std_type, name=uuid)
+        elif element_type == "storage":
+            bus = utils.get_or_error("bus", element)
+            p_mw = utils.get_or_error("p_mw", element)
+            max_e_mwh = utils.get_or_error("max_e_mwh", element)
+            index = pp.create_storage(net, buses[bus], p_mw, max_e_mwh, name=uuid)
         elif element_type == "switch":
             pass # Handled below
         elif element_type == "bus":
