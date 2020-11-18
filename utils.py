@@ -8,7 +8,8 @@ required_props = {
     "load": ["etype", "bus", "p_mw"],
     "ext_grid": ["etype", "bus"],
     "line": ["etype", "from_bus", "to_bus", "length_km", "std_type"],
-    "switch": ["etype", "bus", "element", "et"]
+    "switch": ["etype", "bus", "element", "et"],
+    "trafo": ["etype", "hv_bus", "lv_bus", "std_type"]
 }
 
 def get_or_error(key, input_dict):

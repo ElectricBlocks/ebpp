@@ -110,6 +110,11 @@ def sim_request(data):
             length_km = utils.get_or_error("length_km", element)
             std_type = utils.get_or_error("std_type", element)
             index = pp.create_line(net, buses[from_bus], buses[to_bus], length_km, std_type, name=uuid)
+        elif element_type == "trafo":
+            hv_bus = utils.get_or_error("hv_bus", element)
+            lv_bus = utils.get_or_error("lv_bus", element)
+            std_type = utils.get_or_error("std_type", element)
+            index = pp.create_transformer(net, buses[hv_bus], buses[lv_bus], std_type, name=uuid)
         elif element_type == "switch":
             pass # Handled below
         elif element_type == "bus":
@@ -180,7 +185,6 @@ def sim_request(data):
         results[uuid].update(net["res_" + element_type].iloc[index].to_dict())
 
     message["elements"] = results
-    print(message)
     return json.dumps(message)
 
 # PROGRAM MAIN ENTRY POINT
