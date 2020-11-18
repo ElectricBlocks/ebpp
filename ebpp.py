@@ -110,6 +110,8 @@ def sim_request(data):
             length_km = utils.get_or_error("length_km", element)
             std_type = utils.get_or_error("std_type", element)
             index = pp.create_line(net, buses[from_bus], buses[to_bus], length_km, std_type, name=uuid)
+        elif element_type == "switch":
+            pass # Handled below
         elif element_type == "bus":
             pass # Already handled above
         else:
@@ -122,6 +124,35 @@ def sim_request(data):
                     net[element_type][prop][index] = value
                 except:
                     raise InvalidError(f"Unable to set property {prop}.")
+    
+    # Add switches to network as they require references to other elements
+    for uuid,element in elements.items():
+        element_type = utils.get_or_error("etype", element)
+        if element_type == "switch":
+            # Fill required properties
+            bus = utils.get_or_error("bus", element)
+            elem = utils.get_or_error("element", element)
+            et = utils.get_or_error("et", element)
+            if et == "b":
+                elem = buses[elem]
+            elif et == "l":
+                elem = pp.get_element_index(net, "line", elem)
+            elif et == "t":
+                elem = pp.get_element_index(net, "trafo", elem)
+            elif et == "t3":
+                elem = pp.get_element_index(net, "trafo3w", elem)
+            else:
+                raise InvalidError(f"Invalid element type {et}. Must be b,l,t, or t3.")
+            index = pp.create_switch(net, buses[bus], elem, et, name=uuid)
+
+            # Fill optional properties
+            for prop, value in element.items():
+                if prop not in req_props:
+                    try:
+                        net[element_type][prop][index] = value
+                    except:
+                        raise InvalidError(f"Unable to set property {prop}.")
+            
     
     try:
         if is_three_phase:
@@ -140,13 +171,16 @@ def sim_request(data):
     results = {}
 
     for uuid,element in elements.items():
-        results[uuid] = {}
         element_type = elements[uuid]["etype"]
+        if element_type == "switch": continue
+        net["res_" + element_type] = net["res_" + element_type].fillna(0)
+        results[uuid] = {}
         results[uuid]["etype"] = element_type
         index = pp.get_element_index(net, element_type, uuid, exact_match=True)
         results[uuid].update(net["res_" + element_type].iloc[index].to_dict())
 
     message["elements"] = results
+    print(message)
     return json.dumps(message)
 
 # PROGRAM MAIN ENTRY POINT
