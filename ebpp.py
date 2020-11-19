@@ -120,6 +120,11 @@ def sim_request(data):
             p_mw = utils.get_or_error("p_mw", element)
             max_e_mwh = utils.get_or_error("max_e_mwh", element)
             index = pp.create_storage(net, buses[bus], p_mw, max_e_mwh, name=uuid)
+        elif element_type == "gen":
+            bus = utils.get_or_error("bus", element)
+            p_mw = utils.get_or_error("p_mw", element)
+            vm_pu = utils.get_or_error("vm_pu", element)
+            index = pp.create_gen(net, buses[bus], p_mw, vm_pu, name=uuid)
         elif element_type == "switch":
             pass # Handled below
         elif element_type == "bus":
