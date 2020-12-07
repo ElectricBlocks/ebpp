@@ -11,7 +11,7 @@ required_props = {
     "switch": ["etype", "bus", "element", "et"],
     "trafo": ["etype", "hv_bus", "lv_bus", "std_type"],
     "storage": ["etype", "bus", "p_mw", "max_e_mwh"],
-    "gen": ["etype", "bus", "p_mw", "vm_pu"]
+    "gen": ["etype", "bus", "p_mw", "vm_pu", "slack"]
 }
 
 def get_or_error(key, input_dict):
