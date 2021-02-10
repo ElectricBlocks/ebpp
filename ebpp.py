@@ -114,18 +114,20 @@ def sim_request(data):
         elif element_type == "trafo":
             hv_bus = utils.get_or_error("hv_bus", element)
             lv_bus = utils.get_or_error("lv_bus", element)
-            std_type = utils.get_or_error("std_type", element)
-            index = pp.create_transformer(net, buses[hv_bus], buses[lv_bus], std_type, name=uuid)
+            sn_mva = utils.get_or_error("sn_mva", element)
+            vn_hv_kv = utils.get_or_error("vn_hv_kv", element)
+            vn_lv_kv = utils.get_or_error("vn_lv_kv", element)
+            vk_percent = utils.get_or_error("vk_percent", element)
+            vkr_percent = utils.get_or_error("vkr_percent", element)
+            pfe_kw = utils.get_or_error("pfe_kw", element)
+            i0_percent = utils.get_or_error("i0_percent", element)
+            shift_degree = utils.get_or_error("shift_degree", element)
+            index = pp.create_transformer_from_parameters(net, buses[hv_bus], buses[lv_bus], sn_mva, vn_hv_kv, vn_lv_kv, vk_percent, vkr_percent, pfe_kw, i0_percent, shift_degree, name=uuid)
         elif element_type == "storage":
             bus = utils.get_or_error("bus", element)
             p_mw = utils.get_or_error("p_mw", element)
             max_e_mwh = utils.get_or_error("max_e_mwh", element)
             index = pp.create_storage(net, buses[bus], p_mw, max_e_mwh, name=uuid)
-        elif element_type == "gen":
-            bus = utils.get_or_error("bus", element)
-            p_mw = utils.get_or_error("p_mw", element)
-            vm_pu = utils.get_or_error("vm_pu", element)
-            index = pp.create_gen(net, buses[bus], p_mw, vm_pu, name=uuid)
         elif element_type == "switch":
             pass # Handled below
         elif element_type == "bus":
@@ -169,7 +171,6 @@ def sim_request(data):
                     except:
                         raise InvalidError(f"Unable to set property {prop}.")
             
-    
     try:
         if is_three_phase:
             pp.runpp_3ph(net)
