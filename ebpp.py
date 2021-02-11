@@ -64,112 +64,72 @@ def keep_alive():
 
 def sim_request(data):
     is_three_phase = utils.get_or_error("3phase", data)
-    elements = utils.get_or_error("elements", data)
-    buses = {}
+    elements_dict = utils.get_or_error("elements", data)
+    buses = {} # Used for matching bus UUIDs to index
+
+    def process_potential_bus(key, value):
+        """ Inner method for processing a positional argument that could be a bus
+            This function checks if the value is in the bus keys. This should never cause issues so long as UUID's aren't used for
+            any other purpose except for bus identification and as long as there are no UUID collisions. Both of those cases seem
+            exceptionally unlikely, so this should work fine.
+        """
+        if value in buses.keys():
+            return buses[value]
+        else:
+            return value
+
+    bus_list = [(uuid, element) for uuid, element in elements_dict.items() if utils.get_or_error("etype", element) == "bus"]
+    element_list = [(uuid, element) for uuid, element in elements_dict.items() if utils.get_or_error("etype", element) != "bus" and utils.get_or_error("etype", element) != "switch"]
+    switch_list = [(uuid, element) for uuid, element in elements_dict.items() if utils.get_or_error("etype", element) == "switch"]
 
     net = pp.create_empty_network()
-    
-    # Start by adding all buses to the network
-    for uuid,element in elements.items():
-        element_type = utils.get_or_error("etype", element)
-        if element_type == "bus":
-            # Fill required properties
-            req_props = utils.required_props["bus"]
-            vn_kv = element.get("vn_kv", 20.0)
-            i = pp.create_bus(net, name=uuid, vn_kv=vn_kv)
 
-            # Fill optional properties
-            for prop, value in element.items():
-                if prop not in req_props:
-                    net.bus[prop][i] = value
-            
-            buses[uuid] = i
+    for uuid, bus in bus_list:
+        element_type = "bus"
+        req_props = utils.required_props[element_type]
+        positional_args = [ value for key, value in bus.items() if key in req_props ]
+        optional_args = { key: value for key, value in bus.items() if (not key in req_props) and (not key == "etype")}
+        index = pp.create_bus(net, *positional_args, **optional_args, name=uuid)
+        buses[uuid] = index
     
-    for uuid,element in elements.items():
+    for uuid, element in element_list:
         element_type = utils.get_or_error("etype", element)
         req_props = utils.required_props[element_type]
-        index = None
-
-        # Create with required props
+        positional_args = [process_potential_bus(key, value) for key, value in element.items() if key in req_props]
+        optional_args = { key: value for key, value in element.items() if (not key in req_props) and (not key == "etype")}
+        
         if element_type == "load":
-            bus = utils.get_or_error("bus", element)
-            p_mw = utils.get_or_error("p_mw", element)
-            index = pp.create_load(net, buses[bus], p_mw=p_mw, name=uuid)
-            pass
+            pp.create_load(net, *positional_args, **optional_args, name=uuid)
         elif element_type == "gen":
-            bus = utils.get_or_error("bus", element)
-            p_mw = utils.get_or_error("p_mw", element)
-            vm_pu = utils.get_or_error("vm_pu", element)
-            slack = utils.get_or_error("slack", element)
-            index = pp.create_gen(net, buses[bus], p_mw=p_mw, vm_pu=vm_pu, slack=slack, name=uuid)
+            pp.create_gen(net, *positional_args, **optional_args, name=uuid)
         elif element_type == "ext_grid":
-            bus = utils.get_or_error("bus", element)
-            index = pp.create_ext_grid(net, buses[bus], name=uuid)
+            pp.create_ext_grid(net, *positional_args, **optional_args, name=uuid)
         elif element_type == "line":
-            from_bus = utils.get_or_error("from_bus", element)
-            to_bus = utils.get_or_error("to_bus", element)
-            length_km = utils.get_or_error("length_km", element)
-            std_type = utils.get_or_error("std_type", element)
-            index = pp.create_line(net, buses[from_bus], buses[to_bus], length_km, std_type, name=uuid)
+            pp.create_line(net, *positional_args, *optional_args, name=uuid)
         elif element_type == "trafo":
-            hv_bus = utils.get_or_error("hv_bus", element)
-            lv_bus = utils.get_or_error("lv_bus", element)
-            sn_mva = utils.get_or_error("sn_mva", element)
-            vn_hv_kv = utils.get_or_error("vn_hv_kv", element)
-            vn_lv_kv = utils.get_or_error("vn_lv_kv", element)
-            vk_percent = utils.get_or_error("vk_percent", element)
-            vkr_percent = utils.get_or_error("vkr_percent", element)
-            pfe_kw = utils.get_or_error("pfe_kw", element)
-            i0_percent = utils.get_or_error("i0_percent", element)
-            shift_degree = utils.get_or_error("shift_degree", element)
-            index = pp.create_transformer_from_parameters(net, buses[hv_bus], buses[lv_bus], sn_mva, vn_hv_kv, vn_lv_kv, vk_percent, vkr_percent, pfe_kw, i0_percent, shift_degree, name=uuid)
+            pp.create_transformer_from_parameters(net, *positional_args, **optional_args, name=uuid)
         elif element_type == "storage":
-            bus = utils.get_or_error("bus", element)
-            p_mw = utils.get_or_error("p_mw", element)
-            max_e_mwh = utils.get_or_error("max_e_mwh", element)
-            index = pp.create_storage(net, buses[bus], p_mw, max_e_mwh, name=uuid)
-        elif element_type == "switch":
-            pass # Handled below
-        elif element_type == "bus":
-            pass # Already handled above
+            pp.create_storage(net, *positional_args, **optional_args, name=uuid)
         else:
             raise InvalidError(f"Element type {element_type} is invalid or not implemented!")
 
-        # Fill optional props
-        for prop, value in element.items(): # BUG This does not fill optional props from Optimal Power Flow
-            if prop not in req_props:
-                try:
-                    net[element_type][prop][index] = value
-                except:
-                    raise InvalidError(f"Unable to set property {prop}.")
-    
-    # Add switches to network as they require references to other elements
-    for uuid,element in elements.items():
-        element_type = utils.get_or_error("etype", element)
-        if element_type == "switch":
-            # Fill required properties
-            bus = utils.get_or_error("bus", element)
-            elem = utils.get_or_error("element", element)
-            et = utils.get_or_error("et", element)
-            if et == "b":
-                elem = buses[elem]
-            elif et == "l":
-                elem = pp.get_element_index(net, "line", elem)
-            elif et == "t":
-                elem = pp.get_element_index(net, "trafo", elem)
-            elif et == "t3":
-                elem = pp.get_element_index(net, "trafo3w", elem)
-            else:
-                raise InvalidError(f"Invalid element type {et}. Must be b,l,t, or t3.")
-            index = pp.create_switch(net, buses[bus], elem, et, name=uuid)
-
-            # Fill optional properties
-            for prop, value in element.items():
-                if prop not in req_props:
-                    try:
-                        net[element_type][prop][index] = value
-                    except:
-                        raise InvalidError(f"Unable to set property {prop}.")
+    for uuid, switch in switch_list:
+        element_type = "switch"
+        req_props = utils.required_props[element_type]
+        positional_args = [process_potential_bus(key, value) for key, value in element.items() if key in req_props]
+        optional_args = { key: value for key, value in element.items() if (not key in req_props) and (not key == "etype")}
+        et = positional_args[2]
+        if et == "b":
+            pass # This is handled by process_potential_buses
+        if et == "l":
+            positional_args[1] = pp.get_element_index(net, "line", positional_args[1])
+        elif et == "t":
+            positional_args[1] = pp.get_element_index(net, "trafo", positional_args[1])
+        elif et == "t3":
+            positional_args[1] = pp.get_element_index(net, "trafo3w", positional_args[1])
+        else:
+            raise InvalidError(f"Invalid element type {et}. Must be b,l,t, or t3.")
+        pp.create_switch(net, *positional_args, **optional_args, name=uuid)
             
     try:
         if is_three_phase:
@@ -187,8 +147,8 @@ def sim_request(data):
     message["status"] = "SIM_RESULT"
     results = {}
 
-    for uuid,element in elements.items():
-        element_type = elements[uuid]["etype"]
+    for uuid,element in elements_dict.items():
+        element_type = elements_dict[uuid]["etype"]
         if element_type == "switch": continue
         net["res_" + element_type] = net["res_" + element_type].fillna(0)
         results[uuid] = {}
