@@ -2,3 +2,4 @@ pandas
 pandapower
 Flask
 numba
+python-dotenv

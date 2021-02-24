@@ -1,9 +1,11 @@
 import json
+import os
 import sys
 
 import pandapower as pp
 import pandas as pd
 from flask import Flask, request
+from dotenv import load_dotenv
 from pandapower import LoadflowNotConverged
 
 import utils
@@ -137,6 +139,7 @@ def sim_request(data):
         else:
             pp.runpp(net)
     except LoadflowNotConverged:
+        report = pp.diagnostic(net, report_style="compact", warnings_only=True)
         raise ConvError("Load flow did not converge.")
     except (KeyError, ValueError) as e:
         raise PPError(str(e))
@@ -166,7 +169,9 @@ if __name__ == "__main__":
     """ Entry point for program
     Just calls run and starts listening for requests
     """
-    host_addr = "0.0.0.0"
+    load_dotenv()
+    host_addr = os.getenv("EBPP_HOST", "0.0.0.0")
+    host_port = os.getenv("EBPP_PORT", "1127")
     debug_flag = False
     argc = len(sys.argv)
     if argc == 1:
@@ -180,4 +185,4 @@ if __name__ == "__main__":
             print(f"The flag {sys.argv[1]} is not a valid flag.")
     else:
         print("Invalid number of arguments given.")
-    app.run(host=host_addr, port="1127", debug=debug_flag)
+    app.run(host=host_addr, port=host_port, debug=debug_flag)
